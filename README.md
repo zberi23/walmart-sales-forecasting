@@ -123,8 +123,8 @@ TimesFM final submission Kaggle-ის private leaderboard-ზე:
 
 | Score Type | WMAE |
 |-----------|------|
-| **Private Score** | *(ივსება `model_inference.ipynb`-ის გაშვების შემდეგ)* |
-| Public Score | *(ივსება `model_inference.ipynb`-ის გაშვების შემდეგ)* |
+| **Private Score** | 2717.26 |
+| Public Score | 2647.91 |
 
 ## Repo Structure
 
