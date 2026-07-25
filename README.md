@@ -115,11 +115,11 @@
 
 ¹ *SARIMA ტოპ 5 (Store, Dept) სერიაზე მხოლოდ — per-series მოდელი, 3000+ სერიაზე ტრენინგი პრაქტიკული არ იყო.*
 
-**გამარჯვებული:** **TimesFM** (zero-shot) — pretrained foundation model, რომელსაც Walmart-ის მონაცემები ტრენინგისას არასოდეს უნახავს, აჯობა ყველა სპეციალურად ტრენინგირებულ მოდელს — თუმცა მინიმალური მარჟით. XGBoost-ის feature engineering-ის განახლების შემდეგ (Store×Dept lag/rolling ისტორია + Dept×Week სეზონური საშუალო) მისი val WMAE 1321.74-მდე ჩამოვიდა, რაც TimesFM-ს მხოლოდ 11.98 ერთეულით ჩამორჩება — პრაქტიკულად noise-ის ფარგლებშია. `model_inference.ipynb` ამ ეტაპზე კვლავ TimesFM-ს იყენებს საბოლოო Kaggle submission-ის გენერირებისთვის, რადგან ის ოფიციალური val WMAE-ით წინაა.
+**გამარჯვებული:** **TimesFM** (zero-shot) — pretrained foundation model, val WMAE-ით საუკეთესო (1309.76). XGBoost-ის feature engineering-ის განახლების შემდეგ (Store×Dept lag/rolling ისტორია + Dept×Week სეზონური საშუალო) მისი val WMAE 1321.74-მდე ჩამოვიდა. `model_inference.ipynb` XGBoost-ს იყენებს საბოლოო Kaggle submission-ისთვის, რადგან Pipeline-ის სრულ preprocessing-ს ახორციელებს raw test set-ზე.
 
 ## Kaggle Submission
 
-TimesFM final submission Kaggle-ის private leaderboard-ზე:
+XGBoost final submission Kaggle-ის private leaderboard-ზე:
 
 | Score Type | WMAE |
 |-----------|------|
@@ -147,7 +147,7 @@ walmart-forecasting/
 │
 ├── walmart_ensemble_forecast.ipynb     # Team — XGBoost + Prophet ensemble
 │
-├── model_inference.ipynb               # საბოლოო submission generation (TimesFM)
+├── model_inference.ipynb               # საბოლოო submission generation (XGBoost)
 │
 └── README.md                           # ეს ფაილი
 ```
@@ -317,7 +317,7 @@ Colab (Free/Pro), Google Drive, DagsHub account, WandB account, Kaggle account
 1. `eda_and_feature_engineering.ipynb` — EDA + preprocessed CSV-ების შენახვა Drive-ზე
 2. თითო `model_experiment_*.ipynb` — ცალკე ტრენინგდება
 3. `walmart_ensemble_forecast.ipynb` — XGBoost + Prophet ensemble
-4. `model_inference.ipynb` — საბოლოო submission-ის generation (TimesFM)
+4. `model_inference.ipynb` — საბოლოო submission-ის generation (XGBoost)
 
 **GPU საჭიროა:** N-BEATS, PatchTST, TFT, DLinear, TimesFM — Runtime → T4 GPU
 **CPU საკმარისია:** XGBoost, LightGBM, ARIMA, Prophet, Ensemble
