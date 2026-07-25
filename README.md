@@ -102,8 +102,8 @@
 
 | Rank | Model | Category | Val WMAE | Type |
 |------|-------|----------|----------|------|
-| 🥇 1 | **TimesFM** | Foundation Model | **1309.76** | **Zero-shot** |
-| 🥈 2 | XGBoost | Tree-based | 1321.74 | Trained |
+| 🥇 1 | **XGBoost** | Tree-based | **1287.25** | Trained |
+| 🥈 2 | TimesFM | Foundation Model | 1309.76 | Zero-shot |
 | 🥉 3 | Prophet (full population) | Classical | 1331.57 | Trained |
 | 4 | Ensemble (XGBoost + Prophet) | Ensemble | 1332.23 | Weighted blend |
 | 5 | LightGBM | Tree-based | 1342.90 | Trained |
@@ -115,7 +115,7 @@
 
 ¹ *SARIMA ტოპ 5 (Store, Dept) სერიაზე მხოლოდ — per-series მოდელი, 3000+ სერიაზე ტრენინგი პრაქტიკული არ იყო.*
 
-**გამარჯვებული:** **TimesFM** (zero-shot) — pretrained foundation model, val WMAE-ით საუკეთესო (1309.76). XGBoost-ის feature engineering-ის განახლების შემდეგ (Store×Dept lag/rolling ისტორია + Dept×Week სეზონური საშუალო) მისი val WMAE 1321.74-მდე ჩამოვიდა. `model_inference.ipynb` XGBoost-ს იყენებს საბოლოო Kaggle submission-ისთვის, რადგან Pipeline-ის სრულ preprocessing-ს ახორციელებს raw test set-ზე.
+**გამარჯვებული:** **XGBoost** — feature engineering-ის განახლების შემდეგ (Store×Dept lag/rolling ისტორია + Dept×Week სეზონური საშუალო) val WMAE-ით საუკეთესო გახდა (1287.25), TimesFM-ის (zero-shot foundation model, 1309.76) გვერდის ავლით. `model_inference.ipynb` XGBoost-ს იყენებს საბოლოო Kaggle submission-ისთვის, რადგან Pipeline-ის სრულ preprocessing-ს ახორციელებს raw test set-ზე.
 
 ## Kaggle Submission
 
@@ -134,7 +134,7 @@ walmart-forecasting/
 ├── eda_and_feature_engineering.ipynb   # EDA + shared preprocessing
 ├── images/                         # EDA-ს ვიზუალები (README-ში ჩასმული)
 │
-├── model_experiment_XGBoost.ipynb      # Zaqaria
+├── model_experiment_XGBoost.ipynb      # Zaqaria — winner
 ├── model_experiment_NBEATS.ipynb       # Zaqaria
 ├── model_experiment_PatchTST.ipynb     # Zaqaria
 ├── model_experiment_TFT.ipynb          # Zaqaria
@@ -143,7 +143,7 @@ walmart-forecasting/
 ├── model_experiment_LightGBM.ipynb     # Giga
 ├── model_experiment_DLinear.ipynb      # Giga
 ├── model_experiment_Prophet.ipynb      # Giga — classical, full population
-├── model_experiment_TimesFM.ipynb      # Giga — bonus, winner
+├── model_experiment_TimesFM.ipynb      # Giga — bonus
 │
 ├── walmart_ensemble_forecast.ipynb     # Team — XGBoost + Prophet ensemble
 │
@@ -156,25 +156,25 @@ Kaggle-ის data (`train.csv.zip`, `test.csv.zip`, `stores.csv`, `features.csv
 
 ## თითო მოდელის მოკლე აღწერა
 
-### 1. TimesFM (Giga) — გამარჯვებული
-
-**3 WandB runs:** ZeroShot / LongContext / Final
-
-- Google-ის **pretrained** foundation model (`google/timesfm-2.5-200m-pytorch`, decoder-only transformer)
-- **Zero-shot forecasting** — არავითარი training არ ხდება!
-- საუკეთესო: **LongContext** (256-week context) — val WMAE **1309.76**
-- **აჯობა ყველა დანარჩენ მოდელს** — tree-based, classical და ensemble-ის ჩათვლით — მიუხედავად იმისა, რომ Walmart-ის data-ს არასოდეს ნახა
-- Foundation model paradigm-ის ძლიერი დადასტურება time-series-ისთვის
-
-### 2. XGBoost (Zaqaria)
+### 1. XGBoost (Zaqaria) — გამარჯვებული
 
 **6 MLflow runs:** `XGBoost_EDA`, `XGBoost_Cleaning`, `XGBoost_Feature_Selection`, `XGBoost_CrossValidation`, `XGBoost_HyperparameterTuning`, `XGBoost_Final`
 
 - Custom `WalmartPreprocessor` sklearn Transformer Pipeline-ის შიგნით (merge stores + features, fillna, feature engineering)
 - Feature set-ების შედარებაში (`all` / `no_markdown` / `core` / `extended`) გაიმარჯვა **`extended`** — Store×Dept lag/rolling ისტორია (`lag_1`, `lag_52`, `roll_4_mean`, `roll_12_mean`, `store_dept_expanding_median`) და **Dept×Week სეზონური საშუალო** (`Dept_Week_Seasonal_Avg`) — ეს ბოლო ფიჩერი დეპარტამენტის საშუალო გაყიდვებს კონკრეტულ კალენდარულ კვირაზე იჭერს და პირდაპირ სწვდება holiday-სპეციფიკურ spike-ებს
 - 9 curated ჰიპერპარამეტრი კონფიგურაციის შედარება (`max_depth`/`learning_rate`/`regularization` balance), holiday sample weight (`sample_weight`) გამოყენებული ტრენინგის ყველა ეტაპზე — feature selection, CV, tuning, final
-- val WMAE **1321.74** (421,570 training rows) — მნიშვნელოვანი გაუმჯობესება, TimesFM-ს მხოლოდ 11.98 WMAE-ით ჩამორჩება
+- val WMAE **1287.25** (421,570 training rows) — **აჯობა ყველა დანარჩენ მოდელს**, TimesFM-ის ჩათვლით (1309.76), 22.51 WMAE-ით
 - **Model Registry: `walmart_xgboost` v3 → Production**
+
+### 2. TimesFM (Giga)
+
+**3 WandB runs:** ZeroShot / LongContext / Final
+
+- Google-ის **pretrained** foundation model (`google/timesfm-2.5-200m-pytorch`, decoder-only transformer)
+- **Zero-shot forecasting** — არავითარი training არ ხდება!
+- საუკეთესო: **LongContext** (256-week context) — val WMAE **1309.76**
+- XGBoost-ის feature engineering-ის განახლების შემდეგ (1287.25) მეორე ადგილზეა, თუმცა Walmart-ის data-ს არასოდეს ნახა — მაინც ძლიერი შედეგი tree-based-ის გარდა ყველა classical და ensemble მოდელთან შედარებით
+- Foundation model paradigm-ის ძლიერი დადასტურება time-series-ისთვის
 ### 3. Prophet (Giga) — სრული პოპულაცია
 
 **4 MLflow runs:** `Prophet_Baseline`, `Prophet_Holidays`, `Prophet_Tuned`, `Prophet_FullPopulation`
@@ -245,23 +245,23 @@ Kaggle-ის data (`train.csv.zip`, `test.csv.zip`, `stores.csv`, `features.csv
 - SARIMA(1,1,1)(1,1,1)_52 WMAE **7012.96** — **43% შემცირება**. სეზონურობის დამატება ცხადად ცვლის შედეგს
 - ტესტი მხოლოდ ტოპ 5 (Store, Dept) სერიაზე (per-series model, 3000+ სერიაზე ტრენინგი პრაქტიკული არ იყო)
 
-## საბოლოო Pipeline (TimesFM)
+## საბოლოო Pipeline (XGBoost)
 
-Winner მოდელმა (TimesFM) **არ საჭიროებს fine-tuning-ს** — inference notebook-ში პირდაპირ pretrained checkpoint-ს ვტვირთავთ:
+Winner მოდელი (XGBoost) production-ready sklearn Pipeline-შია შეფუთული — Custom `WalmartPreprocessor` ატარებს მთელ preprocessing-ს პირდაპირ raw test set-ზე, fine-tuning ან ცალკე preprocessing გაშვება აღარ სჭირდება:
 
 ```
-raw train.csv (ისტორია → context)   raw test.csv (თარიღები → horizon)
+raw train.csv (feature engineering)   raw test.csv
          │                                   │
          └──────────────┬────────────────────┘
                          ▼
-              long-format (unique_id, ds, y)
+     WalmartPreprocessor (merge stores + features,
+     fillna, calendar/holiday ფიჩერები, lag/rolling)
                          │
                          ▼
-        TimesFM (google/timesfm-2.5-200m-pytorch)
-         256-week context, zero-shot forecast
+              FeatureSelector (extended)
                          │
                          ▼
-     merge Store/Dept/Date-ზე + fallback (median)
+        XGBoost (tuned, holiday sample weight)
                          │
                          ▼
                   Kaggle submission
@@ -269,9 +269,8 @@ raw train.csv (ისტორია → context)   raw test.csv (თარი�
 
 **inference notebook-ში:**
 ```python
-tfm = timesfm.TimesFM_2p5_200M_torch.from_pretrained("google/timesfm-2.5-200m-pytorch")
-tfm.compile(timesfm.ForecastConfig(max_context=512, max_horizon=39, ...))
-point_forecast, _ = tfm.forecast(horizon=horizon, inputs=[context])  
+xgb_pipeline = joblib.load(f'{MODELS_DIR}/xgboost_pipeline.pkl')
+test_predictions = xgb_pipeline.predict(test_raw)  # raw test.csv პირდაპირ
 ```
 
 ## Model Registry Status
@@ -324,11 +323,11 @@ Colab (Free/Pro), Google Drive, DagsHub account, WandB account, Kaggle account
 
 ## საერთო დასკვნები
 
-1. **Foundation models tree-based-ს თითქმის თანაბრად ეჯიბრება** — TimesFM zero-shot-ით (არავითარი training!) ისევ **საუკეთესო** მოდელია, მაგრამ marginალურად — 1309.76 vs XGBoost-ის გაუმჯობესებული 1321.74.
+1. **Tree-based მოდელს შეუძლია foundation models-საც კი გადააჭარბოს** — XGBoost-ის განახლებულმა feature engineering-მა (1287.25) TimesFM-ის zero-shot შედეგსაც (1309.76) აჯობა, მიუხედავად იმისა, რომ ეს უკანასკნელი არასოდეს დატრენინგებულა Walmart-ის data-ზე.
 
 2. **Per-series კლასიკური მოდელებიც კონკურენტუნარიანი შეიძლება იყოს** — სრულ პოპულაციაზე გატრენინგებულმა Prophet-მა (1331.57) გაცილებით აჯობა თავის ძველ top-5-only ვერსიას და პრაქტიკულად TimesFM-ის დონეზეა.
 
-3. **Ensembling ღირს მხოლოდ იმდენად, რამდენადაც branch-ები ცალკე კარგია** — XGBoost + Prophet weighted blend (1332.23) მშენებლობის დროს Prophet-ს მსუბუქად სჯობდა, მაგრამ XGBoost-ის feature engineering-ის შემდგომმა გაუმჯობესებამ (1321.74) თავად ensemble-იც გადააჭარბა — ცალკეული საუკეთესო branch-ი ხანდახან თავად ensemble-ს სჯობს, თუ ის საკმარისად გაუმჯობესდა.
+3. **Ensembling ღირს მხოლოდ იმდენად, რამდენადაც branch-ები ცალკე კარგია** — XGBoost + Prophet weighted blend (1332.23) მშენებლობის დროს Prophet-ს მსუბუქად სჯობდა, მაგრამ XGBoost-ის feature engineering-ის შემდგომმა გაუმჯობესებამ (1287.25) თავად ensemble-იც გადააჭარბა — ცალკეული საუკეთესო branch-ი ხანდახან თავად ensemble-ს სჯობს, თუ ის საკმარისად გაუმჯობესდა.
 
 4. **სიმარტივე ხშირად უპირატესია** — DLinear (2 linear layer) PatchTST-ს (transformer) მხოლოდ 5%-ით ჩამორჩება. "Are Transformers Effective for Time Series?" — ხშირად არა.
 
